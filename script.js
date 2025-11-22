@@ -494,4 +494,5 @@ function refreshLocation() {
 }
 
 // Start the app
-window.onload = initApp;
+// Start the app when DOM is ready
+document.addEventListener('DOMContentLoaded', initApp);

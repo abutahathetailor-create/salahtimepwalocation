@@ -295,6 +295,9 @@ class WeatherUI {
         }
 
         this.widget.classList.remove('weather-loading', 'weather-error');
+            // ADD THIS LINE - Enable animations
+        this.widget.classList.add('animated');
+
         
         const icon = this.widget.querySelector('.weather-icon');
         const temp = this.widget.querySelector('.weather-temp');

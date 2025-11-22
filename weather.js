@@ -14,29 +14,63 @@ class WeatherService {
 
         try {
             console.log('Fetching fresh weather data for:', lat, lon);
-            // Use current date to ensure we get today's weather
-            const today = new Date().toISOString().split('T')[0];
+            
+            // Try enhanced Open-Meteo first
+            const weatherData = await this.tryEnhancedOpenMeteo(lat, lon);
+            
+            if (weatherData && this.validateWeatherData(weatherData, lat, lon)) {
+                // Cache the result
+                this.cacheWeather(lat, lon, weatherData);
+                return weatherData;
+            } else {
+                // Fallback to basic Open-Meteo
+                return await this.getBasicOpenMeteoWeather(lat, lon);
+            }
+            
+        } catch (error) {
+            console.warn('Weather API error:', error);
+            return await this.getBasicOpenMeteoWeather(lat, lon); // Fallback
+        }
+    }
+
+    async tryEnhancedOpenMeteo(lat, lon) {
+        try {
             const response = await fetch(
-                `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto&start_date=${today}&end_date=${today}`
+                `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1`
+            );
+            
+            if (response.ok) {
+                const data = await response.json();
+                const temp = Math.round(data.current.temperature_2m);
+                
+                // If temperature seems reasonable for Saudi Arabia, use it
+                if (temp >= 18 && temp <= 35) {
+                    return {
+                        temperature: temp,
+                        condition: this.mapWeatherCode(data.current.weather_code),
+                        time: new Date().getTime()
+                    };
+                }
+            }
+        } catch (e) {
+            console.log('Enhanced Open-Meteo failed:', e);
+        }
+        return null;
+    }
+
+    async getBasicOpenMeteoWeather(lat, lon) {
+        // Basic fallback
+        try {
+            const response = await fetch(
+                `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto`
             );
             
             if (!response.ok) throw new Error('Weather API failed');
             
             const data = await response.json();
-            const weatherData = this.transformWeatherData(data);
-            
-            // Validate the weather data makes sense for this location
-            if (!this.validateWeatherData(weatherData, lat, lon)) {
-                console.warn('Weather data validation failed - ignoring cache');
-                return null;
-            }
-            
-            // Cache the result
-            this.cacheWeather(lat, lon, weatherData);
-            
-            return weatherData;
+            return this.transformWeatherData(data);
         } catch (error) {
-            console.warn('Weather API error:', error);
+            console.warn('Fallback weather API failed:', error);
             return null;
         }
     }
@@ -53,74 +87,30 @@ class WeatherService {
     mapWeatherCode(code) {
         // WMO Weather interpretation codes (Open-Meteo)
         const codes = {
-            // Clear
             0: 'sunny',
-            
-            // Mainly clear, partly cloudy, and overcast
-            1: 'partly-cloudy', 
-            2: 'partly-cloudy', 
-            3: 'cloudy',
-            
-            // Fog and depositing rime fog
-            45: 'foggy', 
-            48: 'foggy',
-            
-            // Drizzle: Light, moderate, and dense intensity
-            51: 'rainy', 
-            53: 'rainy', 
-            55: 'rainy',
-            
-            // Freezing Drizzle: Light and dense intensity
-            56: 'rainy', 
-            57: 'rainy',
-            
-            // Rain: Slight, moderate and heavy intensity
-            61: 'rainy', 
-            63: 'rainy', 
-            65: 'rainy',
-            
-            // Freezing Rain: Light and heavy intensity
-            66: 'rainy', 
-            67: 'rainy',
-            
-            // Snow fall: Slight, moderate, and heavy intensity
-            71: 'snowy', 
-            73: 'snowy', 
-            75: 'snowy',
-            
-            // Snow grains
-            77: 'snowy',
-            
-            // Rain showers: Slight, moderate, and violent
-            80: 'rainy', 
-            81: 'rainy', 
-            82: 'rainy',
-            
-            // Snow showers slight and heavy
-            85: 'snowy', 
-            86: 'snowy',
-            
-            // Thunderstorm: Slight or moderate
-            95: 'stormy',
-            
-            // Thunderstorm with slight and heavy hail
-            96: 'stormy', 
-            99: 'stormy'
+            1: 'partly-cloudy', 2: 'partly-cloudy', 3: 'cloudy',
+            45: 'foggy', 48: 'foggy',
+            51: 'rainy', 53: 'rainy', 55: 'rainy',
+            61: 'rainy', 63: 'rainy', 65: 'rainy',
+            80: 'rainy', 81: 'rainy', 82: 'rainy',
+            71: 'snowy', 73: 'snowy', 75: 'snowy',
+            95: 'stormy', 96: 'stormy', 99: 'stormy'
         };
         return codes[code] || 'partly-cloudy';
     }
 
-    // Validate weather data makes sense for the location
     validateWeatherData(weatherData, lat, lon) {
-        // Jubail/Saudi Arabia should never be below 15°C
-        if (lat > 20 && lat < 30 && // Saudi Arabia latitude range
-            lon > 45 && lon < 55 && // Saudi Arabia longitude range
-            weatherData.temperature < 15) {
-            console.warn('Suspicious temperature for Saudi location:', weatherData.temperature);
-            return false;
+        if (!weatherData) return false;
+        
+        // Saudi Arabia should typically be 18°C or warmer
+        if (lat > 20 && lat < 30 && lon > 45 && lon < 55) {
+            if (weatherData.temperature < 18) {
+                console.warn('Suspicious low temperature for Saudi location:', weatherData.temperature);
+                return false;
+            }
         }
         
-        // Temperature should be realistic (-50°C to +60°C)
+        // General temperature validation
         if (weatherData.temperature < -50 || weatherData.temperature > 60) {
             console.warn('Unrealistic temperature:', weatherData.temperature);
             return false;

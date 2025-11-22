@@ -33,6 +33,15 @@ const MAX_API_ATTEMPTS = 2;
 
 // Initialize app with location detection
 async function initApp() {
+    // Safety check - make sure elements exist
+    if (!locationEl) {
+        console.error('Location element not found');
+        locationEl = document.querySelector('.location span');
+        if (!locationEl) {
+            console.error('Still cannot find location element');
+            return;
+        }
+    }
     // Update UI to show location detection
     locationEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Detecting location...';
     

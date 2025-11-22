@@ -195,3 +195,32 @@
         animation-iteration-count: 1 !important;
     }
 }
+/* TEMPORARY DEBUG - Force animations to show */
+.weather-widget.animated {
+    position: relative !important;
+    overflow: visible !important;
+}
+
+.weather-widget.animated .weather-icon {
+    position: relative !important;
+    z-index: 10 !important;
+}
+
+.weather-widget.animated .weather-icon::before {
+    display: block !important;
+    opacity: 1 !important;
+    z-index: -1 !important;
+}
+
+/* Force sunny animation to test */
+.weather-widget.animated .weather-icon.sunny::before {
+    content: "TEST" !important;
+    background: red !important;
+    width: 100px !important;
+    height: 100px !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    opacity: 0.5 !important;
+    z-index: 5 !important;
+}

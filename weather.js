@@ -43,18 +43,63 @@ class WeatherService {
     }
 
     mapWeatherCode(code) {
-        // WMO Weather interpretation codes
+        // WMO Weather interpretation codes (Open-Meteo)
         const codes = {
+            // Clear
             0: 'sunny',
-            1: 'partly-cloudy', 2: 'partly-cloudy', 3: 'partly-cloudy',
-            45: 'foggy', 48: 'foggy',
-            51: 'rainy', 53: 'rainy', 55: 'rainy',
-            61: 'rainy', 63: 'rainy', 65: 'rainy',
-            80: 'rainy', 81: 'rainy', 82: 'rainy',
-            71: 'snowy', 73: 'snowy', 75: 'snowy',
-            95: 'stormy', 96: 'stormy', 99: 'stormy'
+            
+            // Mainly clear, partly cloudy, and overcast
+            1: 'partly-cloudy', 
+            2: 'partly-cloudy', 
+            3: 'cloudy',
+            
+            // Fog and depositing rime fog
+            45: 'foggy', 
+            48: 'foggy',
+            
+            // Drizzle: Light, moderate, and dense intensity
+            51: 'rainy', 
+            53: 'rainy', 
+            55: 'rainy',
+            
+            // Freezing Drizzle: Light and dense intensity
+            56: 'rainy', 
+            57: 'rainy',
+            
+            // Rain: Slight, moderate and heavy intensity
+            61: 'rainy', 
+            63: 'rainy', 
+            65: 'rainy',
+            
+            // Freezing Rain: Light and heavy intensity
+            66: 'rainy', 
+            67: 'rainy',
+            
+            // Snow fall: Slight, moderate, and heavy intensity
+            71: 'snowy', 
+            73: 'snowy', 
+            75: 'snowy',
+            
+            // Snow grains
+            77: 'snowy',
+            
+            // Rain showers: Slight, moderate, and violent
+            80: 'rainy', 
+            81: 'rainy', 
+            82: 'rainy',
+            
+            // Snow showers slight and heavy
+            85: 'snowy', 
+            86: 'snowy',
+            
+            // Thunderstorm: Slight or moderate
+            95: 'stormy',
+            
+            // Thunderstorm with slight and heavy hail
+            96: 'stormy', 
+            99: 'stormy'
         };
-        return codes[code] || 'default';
+        return codes[code] || 'partly-cloudy'; // Default to partly cloudy
     }
 
     getCachedWeather(lat, lon) {
@@ -96,7 +141,7 @@ class WeatherUI {
     constructor() {
         this.weatherService = new WeatherService();
         this.widget = null;
-        this.maxAttempts = 10; // Reduced since we know where to look
+        this.maxAttempts = 10;
         this.attempts = 0;
         this.initialized = false;
     }
@@ -223,16 +268,15 @@ class WeatherUI {
 
     formatCondition(condition) {
         const conditions = {
-            'sunny': 'Sunny',
-            'partly-cloudy': 'Partly Cloudy',
+            'sunny': 'Clear',
+            'partly-cloudy': 'Partly Cloudy', 
             'cloudy': 'Cloudy',
             'rainy': 'Rainy',
             'snowy': 'Snowy',
-            'stormy': 'Stormy',
-            'foggy': 'Foggy',
-            'default': 'Fair'
+            'stormy': 'Thunderstorm',
+            'foggy': 'Foggy'
         };
-        return conditions[condition] || 'Unknown';
+        return conditions[condition] || 'Partly Cloudy';
     }
 
     showError(message) {

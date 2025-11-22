@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="weather.css">
-    <link rel="stylesheet" href="weather-icons.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Salah Times - Jubail</title>
+    
+    <!-- CSS files -->
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="weather.css">
+    <link rel="stylesheet" href="weather-icons.css">
     <!--<link rel="stylesheet" href="animations.css">-->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- PWA -->
     <link rel="manifest" href="manifest.json">
-    <script src="script.js"></script>
-    <script src="location.js"></script>
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📿</text></svg>">
     <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📿</text></svg>" type="image/svg+xml">
-    <script src="config.js"></script>
-    <script src="weather.js"></script>
 </head>
 <body>
     <div class="container">
@@ -23,10 +23,10 @@
             <h1><i class="fas fa-mosque"></i> Salah Times</h1>
             <div class="date-display" id="currentDate">Loading...</div>
             <div class="hijri-date" id="hijriDate">Loading...</div>
-<div class="location">
-    <i class="fas fa-map-marker-alt"></i>
-    <span id="locationText">Jubail, Saudi Arabia</span>
-</div>
+            <div class="location">
+                <i class="fas fa-map-marker-alt"></i>
+                <span id="locationText">Jubail, Saudi Arabia</span>
+            </div>
         </div>
         
         <div class="content">
@@ -69,13 +69,10 @@
         </div>
     </div>
 
+    <!-- JavaScript files at the END of body -->
+    <script src="config.js"></script>
+    <script src="location.js"></script>
+    <script src="script.js"></script>
+    <script src="weather.js"></script> <!-- This should be last -->
 </body>
 </html>
-
-
-
-
-
-
-
-

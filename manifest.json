@@ -1,0 +1,21 @@
+{
+  "name": "Salah Times - Jubail",
+  "short_name": "Salah Times",
+  "description": "Prayer times for Jubail, Saudi Arabia",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a5e63",
+  "theme_color": "#1a5e63",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

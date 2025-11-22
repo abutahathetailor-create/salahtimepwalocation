@@ -96,26 +96,16 @@ class WeatherUI {
     constructor() {
         this.weatherService = new WeatherService();
         this.widget = null;
-        this.maxAttempts = 20;
+        this.maxAttempts = 10; // Reduced since we know where to look
         this.attempts = 0;
         this.initialized = false;
     }
 
     init() {
-        // Prevent multiple initializations
-        if (this.initialized) {
-            console.log('Weather already initialized, skipping...');
-            return;
-        }
-        
-        console.log('Initializing weather widget...');
+        if (this.initialized) return;
         this.initialized = true;
         
-        // Check if widget already exists
-        if (document.querySelector('.weather-widget')) {
-            console.log('Weather widget already exists, skipping creation');
-            return;
-        }
+        if (document.querySelector('.weather-widget')) return;
         
         this.createWidget();
         this.waitForLocation();
@@ -132,19 +122,14 @@ class WeatherUI {
             </div>
         `;
 
-        // Insert after location element in header
         const locationEl = document.querySelector('.location');
         if (locationEl && locationEl.parentNode) {
             locationEl.parentNode.insertBefore(this.widget, locationEl.nextSibling);
-            console.log('Weather widget placed after location');
-        } else {
-            console.warn('Location element not found for widget placement');
         }
     }
 
     waitForLocation() {
         this.attempts++;
-        console.log(`Location check attempt ${this.attempts}`);
         
         const coords = this.getCurrentCoords();
         
@@ -154,46 +139,45 @@ class WeatherUI {
         } else if (this.attempts < this.maxAttempts) {
             setTimeout(() => this.waitForLocation(), 1000);
         } else {
-            console.warn('Location not available after max attempts, using default Jubail coordinates');
-            // Use Jubail, Saudi Arabia coordinates as fallback
+            console.warn('Using default Jubail coordinates');
             this.tryGetWeather({ lat: 27.004, lon: 49.646 });
         }
     }
 
     getCurrentCoords() {
-        // Method 1: Check localStorage for coordinates from your main app
+        // METHOD 1: Direct access to your locationService
+        if (typeof locationService !== 'undefined' && locationService.currentLocation) {
+            console.log('Found location in locationService:', locationService.currentLocation);
+            return {
+                lat: locationService.currentLocation.latitude,
+                lon: locationService.currentLocation.longitude
+            };
+        }
+        
+        // METHOD 2: Check if location is stored in window object by your main app
+        if (window.currentLocation && window.currentLocation.latitude) {
+            console.log('Found location in window.currentLocation');
+            return {
+                lat: window.currentLocation.latitude,
+                lon: window.currentLocation.longitude
+            };
+        }
+        
+        // METHOD 3: Check localStorage (your location.js uses 'salah-location-cache')
         try {
-            const userLocation = localStorage.getItem('userLocation');
-            if (userLocation) {
-                const location = JSON.parse(userLocation);
-                console.log('Found location in localStorage:', location);
-                if (location.latitude && location.longitude) {
+            const cachedLocation = localStorage.getItem('salah-location-cache');
+            if (cachedLocation) {
+                const locationData = JSON.parse(cachedLocation);
+                if (locationData.location && locationData.location.latitude) {
+                    console.log('Found location in localStorage cache');
                     return {
-                        lat: location.latitude,
-                        lon: location.longitude
+                        lat: locationData.location.latitude,
+                        lon: locationData.location.longitude
                     };
                 }
             }
         } catch (e) {
-            console.warn('Error reading location from localStorage:', e);
-        }
-
-        // Method 2: Check if coordinates are in URL parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const lat = urlParams.get('lat');
-        const lon = urlParams.get('lon');
-        if (lat && lon) {
-            console.log('Found coordinates in URL parameters');
-            return {
-                lat: parseFloat(lat),
-                lon: parseFloat(lon)
-            };
-        }
-
-        // Method 3: Check window object for any location data
-        if (window.currentLocation) {
-            console.log('Found location in window.currentLocation:', window.currentLocation);
-            return window.currentLocation;
+            console.warn('Error reading location from cache:', e);
         }
 
         console.log('No location coordinates found yet');
@@ -266,23 +250,16 @@ class WeatherUI {
     }
 }
 
-// Single initialization with proper cleanup
+// Single initialization
 let weatherInitialized = false;
 
 function initializeWeatherOnce() {
-    // Prevent multiple initializations
-    if (weatherInitialized) {
-        console.log('Weather already initialized globally, skipping...');
-        return;
-    }
-    
-    console.log('Starting single weather initialization...');
+    if (weatherInitialized) return;
     weatherInitialized = true;
     
     // Remove any existing duplicate widgets
     const existingWidgets = document.querySelectorAll('.weather-widget');
     if (existingWidgets.length > 1) {
-        console.log(`Removing ${existingWidgets.length - 1} duplicate weather widgets`);
         for (let i = 1; i < existingWidgets.length; i++) {
             existingWidgets[i].remove();
         }
@@ -292,11 +269,7 @@ function initializeWeatherOnce() {
     weatherUI.init();
 }
 
-// Single event listener to prevent duplicates
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeWeatherOnce);
-} else {
-    initializeWeatherOnce();
-}
+// Wait a bit longer to ensure location.js is fully loaded
+setTimeout(initializeWeatherOnce, 2000);
 
-console.log('Weather module loaded - single initialization ensured');
+console.log('Weather module loaded - will connect to locationService');

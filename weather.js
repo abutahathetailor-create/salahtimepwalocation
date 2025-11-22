@@ -7,21 +7,29 @@ class WeatherService {
     async getWeather(lat, lon) {
         // Check cache first
         const cached = this.getCachedWeather(lat, lon);
-        if (cached) {
+        if (cached && this.validateWeatherData(cached.weather, lat, lon)) {
             console.log('Using cached weather data');
-            return cached;
+            return cached.weather;
         }
 
         try {
             console.log('Fetching fresh weather data for:', lat, lon);
+            // Use current date to ensure we get today's weather
+            const today = new Date().toISOString().split('T')[0];
             const response = await fetch(
-                `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto`
+                `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto&start_date=${today}&end_date=${today}`
             );
             
             if (!response.ok) throw new Error('Weather API failed');
             
             const data = await response.json();
             const weatherData = this.transformWeatherData(data);
+            
+            // Validate the weather data makes sense for this location
+            if (!this.validateWeatherData(weatherData, lat, lon)) {
+                console.warn('Weather data validation failed - ignoring cache');
+                return null;
+            }
             
             // Cache the result
             this.cacheWeather(lat, lon, weatherData);
@@ -99,7 +107,26 @@ class WeatherService {
             96: 'stormy', 
             99: 'stormy'
         };
-        return codes[code] || 'partly-cloudy'; // Default to partly cloudy
+        return codes[code] || 'partly-cloudy';
+    }
+
+    // Validate weather data makes sense for the location
+    validateWeatherData(weatherData, lat, lon) {
+        // Jubail/Saudi Arabia should never be below 15°C
+        if (lat > 20 && lat < 30 && // Saudi Arabia latitude range
+            lon > 45 && lon < 55 && // Saudi Arabia longitude range
+            weatherData.temperature < 15) {
+            console.warn('Suspicious temperature for Saudi location:', weatherData.temperature);
+            return false;
+        }
+        
+        // Temperature should be realistic (-50°C to +60°C)
+        if (weatherData.temperature < -50 || weatherData.temperature > 60) {
+            console.warn('Unrealistic temperature:', weatherData.temperature);
+            return false;
+        }
+        
+        return true;
     }
 
     getCachedWeather(lat, lon) {
@@ -111,8 +138,8 @@ class WeatherService {
             const isExpired = Date.now() - data.time > this.cacheDuration;
             const isSameLocation = Math.abs(data.lat - lat) < 0.01 && Math.abs(data.lon - lon) < 0.01;
 
-            if (!isExpired && isSameLocation) {
-                return data.weather;
+            if (!isExpired && isSameLocation && this.validateWeatherData(data.weather, lat, lon)) {
+                return data;
             }
         } catch (e) {
             console.warn('Weather cache error:', e);

@@ -21,7 +21,8 @@ const countdownTitleEl = document.getElementById('countdownTitle');
 const countdownTimerEl = document.getElementById('countdownTimer');
 const prayerGridEl = document.getElementById('prayerGrid');
 const errorMessageEl = document.getElementById('errorMessage');
-const locationEl = document.querySelector('.location span');
+const locationEl = document.getElementById('locationText');
+
 
 // Prayer times data
 let prayerTimes = {};

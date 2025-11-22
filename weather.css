@@ -32,3 +32,5 @@
     color: #ff6b6b;
     font-size: 0.9rem;
 }
+/* Add this to weather-icons.css */
+.weather-icon.clear-night::after { content: "🌙"; }

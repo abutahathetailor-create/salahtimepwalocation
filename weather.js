@@ -96,12 +96,27 @@ class WeatherUI {
     constructor() {
         this.weatherService = new WeatherService();
         this.widget = null;
-        this.maxAttempts = 30; // More attempts for slower loading
+        this.maxAttempts = 20;
         this.attempts = 0;
+        this.initialized = false;
     }
 
     init() {
+        // Prevent multiple initializations
+        if (this.initialized) {
+            console.log('Weather already initialized, skipping...');
+            return;
+        }
+        
         console.log('Initializing weather widget...');
+        this.initialized = true;
+        
+        // Check if widget already exists
+        if (document.querySelector('.weather-widget')) {
+            console.log('Weather widget already exists, skipping creation');
+            return;
+        }
+        
         this.createWidget();
         this.waitForLocation();
     }
@@ -163,7 +178,7 @@ class WeatherUI {
             console.warn('Error reading location from localStorage:', e);
         }
 
-        // Method 2: Check if coordinates are in URL parameters (common in location apps)
+        // Method 2: Check if coordinates are in URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const lat = urlParams.get('lat');
         const lon = urlParams.get('lon');
@@ -179,15 +194,6 @@ class WeatherUI {
         if (window.currentLocation) {
             console.log('Found location in window.currentLocation:', window.currentLocation);
             return window.currentLocation;
-        }
-
-        // Method 4: Check for any global variables that might contain location
-        for (let key in window) {
-            if (key.toLowerCase().includes('location') && window[key] && 
-                typeof window[key] === 'object' && window[key].lat) {
-                console.log('Found location in window.' + key, window[key]);
-                return window[key];
-            }
         }
 
         console.log('No location coordinates found yet');
@@ -260,30 +266,37 @@ class WeatherUI {
     }
 }
 
-// Initialize weather when everything is ready
-function initializeWeather() {
-    console.log('Starting weather initialization...');
+// Single initialization with proper cleanup
+let weatherInitialized = false;
+
+function initializeWeatherOnce() {
+    // Prevent multiple initializations
+    if (weatherInitialized) {
+        console.log('Weather already initialized globally, skipping...');
+        return;
+    }
     
-    // Wait a bit longer to ensure all other scripts are loaded
-    setTimeout(() => {
-        const weatherUI = new WeatherUI();
-        weatherUI.init();
-    }, 2000);
+    console.log('Starting single weather initialization...');
+    weatherInitialized = true;
+    
+    // Remove any existing duplicate widgets
+    const existingWidgets = document.querySelectorAll('.weather-widget');
+    if (existingWidgets.length > 1) {
+        console.log(`Removing ${existingWidgets.length - 1} duplicate weather widgets`);
+        for (let i = 1; i < existingWidgets.length; i++) {
+            existingWidgets[i].remove();
+        }
+    }
+    
+    const weatherUI = new WeatherUI();
+    weatherUI.init();
 }
 
-// Multiple initialization methods for maximum compatibility
+// Single event listener to prevent duplicates
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeWeather);
+    document.addEventListener('DOMContentLoaded', initializeWeatherOnce);
 } else {
-    // If DOM is already loaded, initialize immediately
-    initializeWeather();
+    initializeWeatherOnce();
 }
 
-// Also initialize when window loads completely
-window.addEventListener('load', initializeWeather);
-
-// Export for manual initialization if needed
-window.WeatherUI = WeatherUI;
-window.initializeWeather = initializeWeather;
-
-console.log('Weather module loaded - waiting for location data...');
+console.log('Weather module loaded - single initialization ensured');

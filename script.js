@@ -14,15 +14,8 @@ const prayerArabicNames = {
 };
 
 // DOM Elements
-const currentDateEl = document.getElementById('currentDate');
-const hijriDateEl = document.getElementById('hijriDate');
-const currentTimeEl = document.getElementById('currentTime');
-const countdownTitleEl = document.getElementById('countdownTitle');
-const countdownTimerEl = document.getElementById('countdownTimer');
-const prayerGridEl = document.getElementById('prayerGrid');
-const errorMessageEl = document.getElementById('errorMessage');
-let locationEl = document.getElementById('locationText');
-
+// DOM Elements (will be initialized in initApp)
+let currentDateEl, hijriDateEl, currentTimeEl, countdownTitleEl, countdownTimerEl, prayerGridEl, errorMessageEl, locationEl;
 
 // Prayer times data
 let prayerTimes = {};
@@ -34,13 +27,20 @@ const MAX_API_ATTEMPTS = 2;
 // Initialize app with location detection
 async function initApp() {
     // Safety check - make sure elements exist
+   // Initialize DOM elements
+    currentDateEl = document.getElementById('currentDate');
+    hijriDateEl = document.getElementById('hijriDate');
+    currentTimeEl = document.getElementById('currentTime');
+    countdownTitleEl = document.getElementById('countdownTitle');
+    countdownTimerEl = document.getElementById('countdownTimer');
+    prayerGridEl = document.getElementById('prayerGrid');
+    errorMessageEl = document.getElementById('errorMessage');
+    locationEl = document.getElementById('locationText');
+    
+    // Safety check - make sure elements exist
     if (!locationEl) {
         console.error('Location element not found');
-        locationEl = document.querySelector('.location span');
-        if (!locationEl) {
-            console.error('Still cannot find location element');
-            return;
-        }
+        return;
     }
     // Update UI to show location detection
     locationEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Detecting location...';

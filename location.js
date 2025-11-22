@@ -99,7 +99,7 @@ class LocationService {
     // Extract city name from geocoding data
     extractCityName(data) {
         const address = data.address;
-        return address.city || address.town || address.village || address.municipality || 'Unknown Location';
+        return address.city || address.town || address.village || address.municipality || address.county || 'Unknown Location';
     }
 
     // Format display name

@@ -3,6 +3,15 @@ let CURRENT_LAT = 27.0040;
 let CURRENT_LNG = 49.6460;
 let CURRENT_LOCATION_NAME = "Jubail, Saudi Arabia";
 
+// Constants
+const MAX_API_ATTEMPTS = 2;
+const SEASONS = {
+    SPRING: { start: 3, end: 5 },
+    SUMMER: { start: 6, end: 8 },
+    AUTUMN: { start: 9, end: 11 },
+    WINTER: { start: 12, end: 2 }
+};
+
 // Arabic prayer names
 const prayerArabicNames = {
     Fajr: "الفجر",
@@ -13,8 +22,17 @@ const prayerArabicNames = {
     Isha: "العشاء"
 };
 
+// Prayer icons
+const prayerIcons = {
+    Fajr: "fas fa-star-and-crescent",
+    Sunrise: "fas fa-sun",
+    Dhuhr: "fas fa-sun",
+    Asr: "fas fa-cloud-sun", 
+    Maghrib: "fas fa-sun",
+    Isha: "fas fa-moon"
+};
+
 // DOM Elements
-// DOM Elements (will be initialized in initApp)
 let currentDateEl, hijriDateEl, currentTimeEl, countdownTitleEl, countdownTimerEl, prayerGridEl, errorMessageEl, locationEl;
 
 // Prayer times data
@@ -22,26 +40,17 @@ let prayerTimes = {};
 let activePrayer = '';
 let nextPrayer = '';
 let apiAttempts = 0;
-const MAX_API_ATTEMPTS = 2;
 
 // Initialize app with location detection
 async function initApp() {
-    // Safety check - make sure elements exist
-   // Initialize DOM elements
-    currentDateEl = document.getElementById('currentDate');
-    hijriDateEl = document.getElementById('hijriDate');
-    currentTimeEl = document.getElementById('currentTime');
-    countdownTitleEl = document.getElementById('countdownTitle');
-    countdownTimerEl = document.getElementById('countdownTimer');
-    prayerGridEl = document.getElementById('prayerGrid');
-    errorMessageEl = document.getElementById('errorMessage');
-    locationEl = document.getElementById('locationText');
+    initializeDOMElements();
     
     // Safety check - make sure elements exist
     if (!locationEl) {
         console.error('Location element not found');
         return;
     }
+    
     // Update UI to show location detection
     locationEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Detecting location...';
     
@@ -58,6 +67,18 @@ async function initApp() {
         locationEl.textContent = 'Jubail, Saudi Arabia';
         continueAppInitialization();
     }
+}
+
+// Initialize DOM elements
+function initializeDOMElements() {
+    currentDateEl = document.getElementById('currentDate');
+    hijriDateEl = document.getElementById('hijriDate');
+    currentTimeEl = document.getElementById('currentTime');
+    countdownTitleEl = document.getElementById('countdownTitle');
+    countdownTimerEl = document.getElementById('countdownTimer');
+    prayerGridEl = document.getElementById('prayerGrid');
+    errorMessageEl = document.getElementById('errorMessage');
+    locationEl = document.getElementById('locationText');
 }
 
 // Initialize location
@@ -105,21 +126,10 @@ function showTemporaryMessage(message, type = 'info') {
         animation: fadeInOut 5s ease-in-out;
     `;
     
-    // Add fade animation
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes fadeInOut {
-            0%, 100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
-            10%, 90% { opacity: 1; transform: translateX(-50%) translateY(0); }
-        }
-    `;
-    document.head.appendChild(style);
-    
     document.body.appendChild(tempMsg);
     
     setTimeout(() => {
         tempMsg.remove();
-        style.remove();
     }, 5000);
 }
 
@@ -250,6 +260,13 @@ async function fetchPrayerTimes() {
     throw new Error('All API attempts failed');
 }
 
+// Get approximate Hijri year
+function getApproximateHijriYear() {
+    const gregorianYear = new Date().getFullYear();
+    // Approximate conversion (this is simplified)
+    return 1445 + Math.floor((gregorianYear - 2023) * 0.97);
+}
+
 // Get accurate prayer times based on current date
 function getFallbackPrayerTimes() {
     const today = new Date();
@@ -259,7 +276,7 @@ function getFallbackPrayerTimes() {
     // Sample prayer times (adjusted for general use)
     let times;
     
-    if (month >= 3 && month <= 5) { // Spring
+    if (month >= SEASONS.SPRING.start && month <= SEASONS.SPRING.end) {
         times = {
             Fajr: "04:15",
             Sunrise: "05:35",
@@ -268,7 +285,7 @@ function getFallbackPrayerTimes() {
             Maghrib: "18:15",
             Isha: "19:45"
         };
-    } else if (month >= 6 && month <= 8) { // Summer
+    } else if (month >= SEASONS.SUMMER.start && month <= SEASONS.SUMMER.end) {
         times = {
             Fajr: "03:45",
             Sunrise: "05:05",
@@ -277,7 +294,7 @@ function getFallbackPrayerTimes() {
             Maghrib: "18:35",
             Isha: "20:05"
         };
-    } else if (month >= 9 && month <= 11) { // Autumn
+    } else if (month >= SEASONS.AUTUMN.start && month <= SEASONS.AUTUMN.end) {
         times = {
             Fajr: "04:30",
             Sunrise: "05:50",
@@ -286,7 +303,7 @@ function getFallbackPrayerTimes() {
             Maghrib: "17:55",
             Isha: "19:25"
         };
-    } else { // Winter
+    } else {
         times = {
             Fajr: "04:55",
             Sunrise: "06:15",
@@ -301,7 +318,7 @@ function getFallbackPrayerTimes() {
     const hijriDay = (day + 10) % 30 || 30;
     const hijriMonths = ["Muharram", "Safar", "Rabi al-Awwal", "Rabi al-Thani", "Jumada al-Awwal", "Jumada al-Thani", "Rajab", "Sha'ban", "Ramadan", "Shawwal", "Dhu al-Qadah", "Dhu al-Hijjah"];
     const hijriMonth = hijriMonths[(month + 5) % 12];
-    const hijriYear = 1445; // Approximate Hijri year
+    const hijriYear = getApproximateHijriYear();
     
     return {
         timings: times,
@@ -382,15 +399,6 @@ function formatTime(timeString) {
 
 // Display prayer times in the grid
 function displayPrayerTimes() {
-    const prayerIcons = {
-        Fajr: "fas fa-star-and-crescent",
-        Sunrise: "fas fa-sun",
-        Dhuhr: "fas fa-sun",
-        Asr: "fas fa-cloud-sun", 
-        Maghrib: "fas fa-sun",
-        Isha: "fas fa-moon"
-    };
-    
     prayerGridEl.innerHTML = '';
     
     Object.entries(prayerTimes).forEach(([prayerName, time]) => {
@@ -398,7 +406,7 @@ function displayPrayerTimes() {
         prayerCard.className = 'prayer-card';
         prayerCard.id = `prayer-${prayerName}`;
         
-        if (prayerName === "Fajr" || prayerName === "Sunrise" || prayerName === "Dhuhr" || prayerName === "Asr" || prayerName === "Maghrib" || prayerName === "Isha")  {
+        if (prayerArabicNames[prayerName]) {
             prayerCard.innerHTML = `
                 <div class="prayer-name">
                     <i class="${prayerIcons[prayerName]}"></i>
@@ -502,6 +510,5 @@ function refreshLocation() {
         });
 }
 
-// Start the app
 // Start the app when DOM is ready
 document.addEventListener('DOMContentLoaded', initApp);

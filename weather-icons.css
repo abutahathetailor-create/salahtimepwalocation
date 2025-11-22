@@ -1,0 +1,194 @@
+/* weather-icons.css - Enhanced weather icons for Prayer Times App */
+
+/* Base icon styles */
+.weather-icon {
+    display: inline-block;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
+}
+
+/* Unicode emoji fallbacks */
+.weather-icon.emoji {
+    font-size: 1.3rem;
+    line-height: 1;
+}
+
+/* CSS-based weather icons (optional enhancement) */
+.weather-icon.css {
+    position: relative;
+    font-size: 0.8rem;
+}
+
+/* Sunny/Clear */
+.weather-icon.clear-day::before { content: "☀️"; }
+.weather-icon.clear-night::before { content: "🌙"; }
+
+/* Partly Cloudy */
+.weather-icon.partly-cloudy-day::before { content: "⛅"; }
+.weather-icon.partly-cloudy-night::before { content: "☁️"; }
+
+/* Cloudy */
+.weather-icon.cloudy::before,
+.weather-icon.overcast::before { content: "☁️"; }
+
+/* Rain */
+.weather-icon.rain::before,
+.weather-icon.light-rain::before { content: "🌧️"; }
+.weather-icon.moderate-rain::before { content: "🌧️"; }
+.weather-icon.heavy-rain::before { content: "⛈️"; }
+
+/* Drizzle */
+.weather-icon.drizzle::before { content: "🌦️"; }
+
+/* Thunderstorm */
+.weather-icon.thunderstorm::before,
+.weather-icon.thunderstorm-with-rain::before { content: "⛈️"; }
+
+/* Snow */
+.weather-icon.snow::before,
+.weather-icon.light-snow::before,
+.weather-icon.heavy-snow::before { content: "❄️"; }
+.weather-icon.snowflake::before { content: "❄️"; }
+
+/* Atmosphere */
+.weather-icon.mist::before,
+.weather-icon.fog::before,
+.weather-icon.haze::before { content: "🌫️"; }
+.weather-icon.dust::before,
+.weather-icon.sand::before { content: "💨"; }
+.weather-icon.ash::before { content: "🌋"; }
+.weather-icon.squall::before,
+.weather-icon.tornado::before { content: "🌪️"; }
+
+/* Special Conditions */
+.weather-icon.hot::before { content: "🔥"; }
+.weather-icon.cold::before { content: "🥶"; }
+.weather-icon.windy::before { content: "💨"; }
+.weather-icon.humid::before { content: "💧"; }
+
+/* OpenWeatherMap Icon Code Mapping */
+.weather-icon[data-owm="01d"]::before { content: "☀️"; } /* clear sky day */
+.weather-icon[data-owm="01n"]::before { content: "🌙"; } /* clear sky night */
+.weather-icon[data-owm="02d"]::before { content: "⛅"; } /* few clouds day */
+.weather-icon[data-owm="02n"]::before { content: "☁️"; } /* few clouds night */
+.weather-icon[data-owm="03d"]::before { content: "☁️"; } /* scattered clouds */
+.weather-icon[data-owm="03n"]::before { content: "☁️"; } /* scattered clouds */
+.weather-icon[data-owm="04d"]::before { content: "☁️"; } /* broken clouds */
+.weather-icon[data-owm="04n"]::before { content: "☁️"; } /* broken clouds */
+.weather-icon[data-owm="09d"]::before { content: "🌧️"; } /* shower rain */
+.weather-icon[data-owm="09n"]::before { content: "🌧️"; } /* shower rain */
+.weather-icon[data-owm="10d"]::before { content: "🌦️"; } /* rain day */
+.weather-icon[data-owm="10n"]::before { content: "🌧️"; } /* rain night */
+.weather-icon[data-owm="11d"]::before { content: "⛈️"; } /* thunderstorm day */
+.weather-icon[data-owm="11n"]::before { content: "⛈️"; } /* thunderstorm night */
+.weather-icon[data-owm="13d"]::before { content: "❄️"; } /* snow */
+.weather-icon[data-owm="13n"]::before { content: "❄️"; } /* snow */
+.weather-icon[data-owm="50d"]::before { content: "🌫️"; } /* mist */
+.weather-icon[data-owm="50n"]::before { content: "🌫️"; } /* mist */
+
+/* Animation for dynamic icons */
+.weather-icon.animated {
+    animation: weather-pulse 2s ease-in-out infinite;
+}
+
+.weather-icon.rain-animated {
+    animation: rain-fall 1.5s linear infinite;
+}
+
+.weather-icon.thunder-animated {
+    animation: thunder-flash 3s ease-in-out infinite;
+}
+
+.weather-icon.snow-animated {
+    animation: snow-fall 3s linear infinite;
+}
+
+/* Keyframe animations */
+@keyframes weather-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+@keyframes rain-fall {
+    0% { transform: translateY(-2px); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: translateY(2px); opacity: 0; }
+}
+
+@keyframes thunder-flash {
+    0%, 90%, 100% { opacity: 1; }
+    95% { opacity: 0.3; }
+}
+
+@keyframes snow-fall {
+    0% { transform: translateY(-3px) rotate(0deg); }
+    100% { transform: translateY(3px) rotate(360deg); }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .weather-icon.animated,
+    .weather-icon.rain-animated,
+    .weather-icon.thunder-animated,
+    .weather-icon.snow-animated {
+        animation: none;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .weather-icon {
+        filter: none;
+        text-shadow: 0 0 1px #000;
+    }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+    .weather-icon {
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+    }
+}
+
+/* Mobile responsive icons */
+@media (max-width: 768px) {
+    .weather-icon {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .weather-icon.emoji {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .weather-icon {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .weather-icon.emoji {
+        font-size: 1rem;
+    }
+}
+
+/* Print styles */
+@media print {
+    .weather-icon {
+        filter: none;
+    }
+    
+    .weather-icon::before {
+        content: "⛅" !important; /* Simple cloud for all conditions when printing */
+    }
+}

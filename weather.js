@@ -2,75 +2,119 @@ class WeatherService {
     constructor() {
         this.cacheKey = 'weatherData';
         this.cacheDuration = 30 * 60 * 1000; // 30 minutes
+        this.apiKey = 'e7ce926d18854c239f0190141252211';
     }
 
     async getWeather(lat, lon) {
         // Check cache first
         const cached = this.getCachedWeather(lat, lon);
-        if (cached && this.validateWeatherData(cached.weather, lat, lon)) {
+        if (cached) {
             console.log('Using cached weather data');
             return cached.weather;
         }
 
         try {
-            console.log('Fetching fresh weather data for:', lat, lon);
+            console.log('Fetching from WeatherAPI for:', lat, lon);
             
-            // Try enhanced Open-Meteo first
-            const weatherData = await this.tryEnhancedOpenMeteo(lat, lon);
-            
-            if (weatherData && this.validateWeatherData(weatherData, lat, lon)) {
-                // Cache the result
-                this.cacheWeather(lat, lon, weatherData);
-                return weatherData;
-            } else {
-                // Fallback to basic Open-Meteo
-                return await this.getBasicOpenMeteoWeather(lat, lon);
-            }
-            
-        } catch (error) {
-            console.warn('Weather API error:', error);
-            return await this.getBasicOpenMeteoWeather(lat, lon); // Fallback
-        }
-    }
-
-    async tryEnhancedOpenMeteo(lat, lon) {
-        try {
+            // WeatherAPI.com - much better accuracy
             const response = await fetch(
-                `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1`
-            );
-            
-            if (response.ok) {
-                const data = await response.json();
-                const temp = Math.round(data.current.temperature_2m);
-                
-                // If temperature seems reasonable for Saudi Arabia, use it
-                if (temp >= 18 && temp <= 35) {
-                    return {
-                        temperature: temp,
-                        condition: this.mapWeatherCode(data.current.weather_code),
-                        time: new Date().getTime()
-                    };
-                }
-            }
-        } catch (e) {
-            console.log('Enhanced Open-Meteo failed:', e);
-        }
-        return null;
-    }
-
-    async getBasicOpenMeteoWeather(lat, lon) {
-        // Basic fallback
-        try {
-            const response = await fetch(
-                `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto`
+                `https://api.weatherapi.com/v1/current.json?key=${this.apiKey}&q=${lat},${lon}&aqi=no`
             );
             
             if (!response.ok) throw new Error('Weather API failed');
             
             const data = await response.json();
+            const weatherData = this.transformWeatherAPIData(data);
+            
+            // Cache the result
+            this.cacheWeather(lat, lon, weatherData);
+            
+            return weatherData;
+            
+        } catch (error) {
+            console.warn('WeatherAPI failed:', error);
+            // Fallback to Open-Meteo
+            return await this.getOpenMeteoFallback(lat, lon);
+        }
+    }
+
+    transformWeatherAPIData(apiData) {
+        const current = apiData.current;
+        return {
+            temperature: Math.round(current.temp_c),
+            condition: this.mapWeatherAPICondition(current.condition.code, current.is_day),
+            time: new Date().getTime()
+        };
+    }
+
+    mapWeatherAPICondition(code, isDay) {
+        // WeatherAPI.com condition codes - much more accurate
+        const conditions = {
+            // Clear
+            1000: isDay ? 'sunny' : 'clear-night',
+            
+            // Cloudy
+            1003: 'partly-cloudy', // Partly cloudy
+            1006: 'cloudy', // Cloudy
+            1009: 'cloudy', // Overcast
+            
+            // Fog
+            1030: 'foggy', // Mist
+            1135: 'foggy', // Fog
+            1147: 'foggy', // Freezing fog
+            
+            // Rain
+            1063: 'rainy', // Patchy rain
+            1066: 'rainy', // Patchy snow
+            1069: 'rainy', // Patchy sleet
+            1072: 'rainy', // Patchy freezing drizzle
+            1087: 'stormy', // Thundery outbreaks
+            1150: 'rainy', // Patchy light drizzle
+            1153: 'rainy', // Light drizzle
+            1168: 'rainy', // Freezing drizzle
+            1171: 'rainy', // Heavy freezing drizzle
+            1180: 'rainy', // Patchy light rain
+            1183: 'rainy', // Light rain
+            1186: 'rainy', // Moderate rain
+            1189: 'rainy', // Heavy rain
+            1192: 'rainy', // Light freezing rain
+            1195: 'rainy', // Heavy freezing rain
+            1198: 'rainy', // Light sleet
+            1201: 'rainy', // Moderate/heavy sleet
+            1204: 'rainy', // Light snow
+            1207: 'rainy', // Moderate/heavy snow
+            1240: 'rainy', // Light rain shower
+            1243: 'rainy', // Moderate/heavy rain shower
+            1246: 'rainy', // Torrential rain shower
+            1249: 'rainy', // Light sleet showers
+            1252: 'rainy', // Moderate/heavy sleet showers
+            1255: 'rainy', // Light snow showers
+            1258: 'rainy', // Moderate/heavy snow showers
+            1261: 'rainy', // Light showers of ice pellets
+            1264: 'rainy', // Moderate/heavy showers of ice pellets
+            
+            // Storm
+            1273: 'stormy', // Patchy light rain with thunder
+            1276: 'stormy', // Moderate/heavy rain with thunder
+            1279: 'stormy', // Patchy light snow with thunder
+            1282: 'stormy', // Moderate/heavy snow with thunder
+        };
+        return conditions[code] || 'partly-cloudy';
+    }
+
+    async getOpenMeteoFallback(lat, lon) {
+        // Fallback to Open-Meteo if WeatherAPI fails
+        try {
+            const response = await fetch(
+                `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto`
+            );
+            
+            if (!response.ok) throw new Error('Fallback API failed');
+            
+            const data = await response.json();
             return this.transformWeatherData(data);
         } catch (error) {
-            console.warn('Fallback weather API failed:', error);
+            console.warn('All weather APIs failed');
             return null;
         }
     }
@@ -99,26 +143,6 @@ class WeatherService {
         return codes[code] || 'partly-cloudy';
     }
 
-    validateWeatherData(weatherData, lat, lon) {
-        if (!weatherData) return false;
-        
-        // Saudi Arabia should typically be 18°C or warmer
-        if (lat > 20 && lat < 30 && lon > 45 && lon < 55) {
-            if (weatherData.temperature < 18) {
-                console.warn('Suspicious low temperature for Saudi location:', weatherData.temperature);
-                return false;
-            }
-        }
-        
-        // General temperature validation
-        if (weatherData.temperature < -50 || weatherData.temperature > 60) {
-            console.warn('Unrealistic temperature:', weatherData.temperature);
-            return false;
-        }
-        
-        return true;
-    }
-
     getCachedWeather(lat, lon) {
         try {
             const cached = localStorage.getItem(this.cacheKey);
@@ -128,7 +152,7 @@ class WeatherService {
             const isExpired = Date.now() - data.time > this.cacheDuration;
             const isSameLocation = Math.abs(data.lat - lat) < 0.01 && Math.abs(data.lon - lon) < 0.01;
 
-            if (!isExpired && isSameLocation && this.validateWeatherData(data.weather, lat, lon)) {
+            if (!isExpired && isSameLocation) {
                 return data;
             }
         } catch (e) {
@@ -286,6 +310,7 @@ class WeatherUI {
     formatCondition(condition) {
         const conditions = {
             'sunny': 'Clear',
+            'clear-night': 'Clear',
             'partly-cloudy': 'Partly Cloudy', 
             'cloudy': 'Cloudy',
             'rainy': 'Rainy',
@@ -333,4 +358,4 @@ function initializeWeatherOnce() {
 // Wait a bit longer to ensure location.js is fully loaded
 setTimeout(initializeWeatherOnce, 2000);
 
-console.log('Weather module loaded - will connect to locationService');
+console.log('Weather module loaded - using WeatherAPI.com');

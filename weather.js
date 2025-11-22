@@ -1,225 +1,193 @@
-// weather.js - Weather functionality for Prayer Times App
-class WeatherManager {
+class WeatherService {
     constructor() {
-        this.apiKey = 'YOUR_OPENWEATHER_API_KEY'; // Will be set via environment
-        this.baseUrl = 'https://api.openweathermap.org/data/2.5/weather';
-        this.cacheKey = 'salahApp_weatherData';
-        this.cacheExpiry = 30 * 60 * 1000; // 30 minutes
-        
-        this.init();
+        this.cacheKey = 'weatherData';
+        this.cacheDuration = 30 * 60 * 1000; // 30 minutes
     }
 
-    init() {
-        // Wait for app to initialize then add weather widget
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => this.setupWeather());
-        } else {
-            this.setupWeather();
-        }
-    }
-
-    setupWeather() {
-        // Create weather widget in header
-        this.createWeatherWidget();
-        
-        // Try to get weather when location is available
-        this.waitForLocation().then(coords => {
-            this.fetchWeatherData(coords.latitude, coords.longitude);
-        }).catch(error => {
-            console.log('Weather: Location not available', error);
-        });
-    }
-
-    createWeatherWidget() {
-        // Find header location element to insert weather next to it
-        const locationElement = document.querySelector('.location-display'); // Adjust selector based on your actual HTML
-        
-        if (locationElement) {
-            const weatherWidget = document.createElement('div');
-            weatherWidget.className = 'weather-widget';
-            weatherWidget.innerHTML = `
-                <div class="weather-loading">Loading weather...</div>
-                <div class="weather-content hidden">
-                    <span class="weather-icon">🌤️</span>
-                    <span class="weather-temp">--°C</span>
-                    <span class="weather-desc">--</span>
-                </div>
-                <div class="weather-error hidden">Weather unavailable</div>
-            `;
-            
-            // Insert after location element
-            locationElement.parentNode.insertBefore(weatherWidget, locationElement.nextSibling);
-            
-            this.weatherElement = weatherWidget;
-        }
-    }
-
-    waitForLocation() {
-        return new Promise((resolve, reject) => {
-            // Check if location already exists in app
-            const existingCoords = this.getExistingCoordinates();
-            if (existingCoords) {
-                resolve(existingCoords);
-                return;
-            }
-
-            // Wait for location to be set (you might need to adjust this based on your app)
-            let attempts = 0;
-            const checkInterval = setInterval(() => {
-                const coords = this.getExistingCoordinates();
-                if (coords) {
-                    clearInterval(checkInterval);
-                    resolve(coords);
-                } else if (attempts++ > 10) { // 10 attempts ~ 5 seconds
-                    clearInterval(checkInterval);
-                    reject(new Error('Location timeout'));
-                }
-            }, 500);
-        });
-    }
-
-    getExistingCoordinates() {
-        // This function should extract coordinates from your existing app
-        // You'll need to adjust this based on how your app stores location data
-        if (window.appLocation && window.appLocation.lat && window.appLocation.lng) {
-            return {
-                latitude: window.appLocation.lat,
-                longitude: window.appLocation.lng
-            };
-        }
-        
-        // Alternative: Get from localStorage or other app storage
-        const storedLocation = localStorage.getItem('userLocation');
-        if (storedLocation) {
-            try {
-                const location = JSON.parse(storedLocation);
-                if (location.lat && location.lng) {
-                    return {
-                        latitude: location.lat,
-                        longitude: location.lng
-                    };
-                }
-            } catch (e) {
-                return null;
-            }
-        }
-        
-        return null;
-    }
-
-    async fetchWeatherData(lat, lon) {
+    async getWeather(lat, lon) {
         // Check cache first
-        const cachedData = this.getCachedWeather();
-        if (cachedData && this.isCacheValid(cachedData)) {
-            this.displayWeather(cachedData.data);
-            return;
-        }
+        const cached = this.getCachedWeather(lat, lon);
+        if (cached) return cached;
 
         try {
-            this.showLoading();
-            
             const response = await fetch(
-                `${this.baseUrl}?lat=${lat}&lon=${lon}&appid=${this.apiKey}&units=metric`
+                `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto`
             );
             
-            if (!response.ok) throw new Error('Weather API error');
+            if (!response.ok) throw new Error('Weather API failed');
             
             const data = await response.json();
-            this.cacheWeather(data);
-            this.displayWeather(data);
+            const weatherData = this.transformWeatherData(data);
             
+            // Cache the result
+            this.cacheWeather(lat, lon, weatherData);
+            
+            return weatherData;
         } catch (error) {
-            console.error('Weather fetch error:', error);
-            this.showError();
-            
-            // Try to use cached data even if expired
-            const cachedData = this.getCachedWeather();
-            if (cachedData) {
-                this.displayWeather(cachedData.data);
-            }
-        }
-    }
-
-    displayWeather(data) {
-        if (!this.weatherElement) return;
-        
-        const temp = Math.round(data.main.temp);
-        const description = data.weather[0].description;
-        const iconCode = data.weather[0].icon;
-        
-        const tempElement = this.weatherElement.querySelector('.weather-temp');
-        const descElement = this.weatherElement.querySelector('.weather-desc');
-        const iconElement = this.weatherElement.querySelector('.weather-icon');
-        
-        if (tempElement) tempElement.textContent = `${temp}°C`;
-        if (descElement) descElement.textContent = description;
-        if (iconElement) iconElement.textContent = this.getWeatherIcon(iconCode);
-        
-        this.showWeatherContent();
-    }
-
-    getWeatherIcon(iconCode) {
-        const iconMap = {
-            '01d': '☀️', '01n': '🌙',
-            '02d': '⛅', '02n': '☁️',
-            '03d': '☁️', '03n': '☁️',
-            '04d': '☁️', '04n': '☁️',
-            '09d': '🌧️', '09n': '🌧️',
-            '10d': '🌦️', '10n': '🌦️',
-            '11d': '⛈️', '11n': '⛈️',
-            '13d': '❄️', '13n': '❄️',
-            '50d': '🌫️', '50n': '🌫️'
-        };
-        return iconMap[iconCode] || '🌤️';
-    }
-
-    showLoading() {
-        this.hideAllWeatherStates();
-        const loading = this.weatherElement.querySelector('.weather-loading');
-        if (loading) loading.classList.remove('hidden');
-    }
-
-    showWeatherContent() {
-        this.hideAllWeatherStates();
-        const content = this.weatherElement.querySelector('.weather-content');
-        if (content) content.classList.remove('hidden');
-    }
-
-    showError() {
-        this.hideAllWeatherStates();
-        const error = this.weatherElement.querySelector('.weather-error');
-        if (error) error.classList.remove('hidden');
-    }
-
-    hideAllWeatherStates() {
-        const states = this.weatherElement.querySelectorAll('.weather-loading, .weather-content, .weather-error');
-        states.forEach(state => state.classList.add('hidden'));
-    }
-
-    cacheWeather(data) {
-        const cacheData = {
-            timestamp: Date.now(),
-            data: data
-        };
-        localStorage.setItem(this.cacheKey, JSON.stringify(cacheData));
-    }
-
-    getCachedWeather() {
-        try {
-            const cached = localStorage.getItem(this.cacheKey);
-            return cached ? JSON.parse(cached) : null;
-        } catch (e) {
+            console.warn('Weather API error:', error);
             return null;
         }
     }
 
-    isCacheValid(cachedData) {
-        return Date.now() - cachedData.timestamp < this.cacheExpiry;
+    transformWeatherData(apiData) {
+        const current = apiData.current_weather;
+        return {
+            temperature: Math.round(current.temperature),
+            condition: this.mapWeatherCode(current.weathercode),
+            time: new Date().getTime()
+        };
+    }
+
+    mapWeatherCode(code) {
+        // WMO Weather interpretation codes
+        const codes = {
+            0: 'sunny',
+            1: 'partly-cloudy', 2: 'partly-cloudy', 3: 'partly-cloudy',
+            45: 'foggy', 48: 'foggy',
+            51: 'rainy', 53: 'rainy', 55: 'rainy',
+            61: 'rainy', 63: 'rainy', 65: 'rainy',
+            80: 'rainy', 81: 'rainy', 82: 'rainy',
+            71: 'snowy', 73: 'snowy', 75: 'snowy',
+            95: 'stormy', 96: 'stormy', 99: 'stormy'
+        };
+        return codes[code] || 'default';
+    }
+
+    getCachedWeather(lat, lon) {
+        try {
+            const cached = localStorage.getItem(this.cacheKey);
+            if (!cached) return null;
+
+            const data = JSON.parse(cached);
+            const isExpired = Date.now() - data.time > this.cacheDuration;
+            const isSameLocation = data.lat === lat && data.lon === lon;
+
+            if (!isExpired && isSameLocation) {
+                return data.weather;
+            }
+        } catch (e) {
+            console.warn('Weather cache error:', e);
+        }
+        return null;
+    }
+
+    cacheWeather(lat, lon, weatherData) {
+        try {
+            const cacheData = {
+                lat,
+                lon,
+                weather: weatherData,
+                time: Date.now()
+            };
+            localStorage.setItem(this.cacheKey, JSON.stringify(cacheData));
+        } catch (e) {
+            console.warn('Weather cache save error:', e);
+        }
     }
 }
 
-// Initialize weather manager when script loads
-const weatherManager = new WeatherManager();
+// UI Integration
+class WeatherUI {
+    constructor() {
+        this.weatherService = new WeatherService();
+        this.widget = null;
+    }
 
-// Export for potential use in main app
-window.weatherManager = weatherManager;
+    init() {
+        this.createWidget();
+        // Wait for location to be available from main app
+        setTimeout(() => this.tryGetWeather(), 1000);
+    }
+
+    createWidget() {
+        this.widget = document.createElement('div');
+        this.widget.className = 'weather-widget weather-loading';
+        this.widget.innerHTML = `
+            <div class="weather-icon default"></div>
+            <div class="weather-info">
+                <div class="weather-temp">--°C</div>
+                <div class="weather-condition">Loading...</div>
+            </div>
+        `;
+
+        // Insert after location display or in header
+        const locationEl = document.querySelector('.location-display') || document.querySelector('header');
+        if (locationEl) {
+            locationEl.appendChild(this.widget);
+        }
+    }
+
+    async tryGetWeather() {
+        // Get coordinates from existing app location
+        const coords = this.getCurrentCoords();
+        if (!coords) {
+            this.showError('Location required');
+            return;
+        }
+
+        const weather = await this.weatherService.getWeather(coords.lat, coords.lon);
+        if (weather) {
+            this.updateDisplay(weather);
+        } else {
+            this.showError('Weather unavailable');
+        }
+    }
+
+    getCurrentCoords() {
+        // This should access your existing app's location data
+        // You might need to modify this based on your current implementation
+        if (window.appLocation && window.appLocation.latitude) {
+            return {
+                lat: window.appLocation.latitude,
+                lon: window.appLocation.longitude
+            };
+        }
+        return null;
+    }
+
+    updateDisplay(weather) {
+        if (!this.widget) return;
+
+        this.widget.classList.remove('weather-loading', 'weather-error');
+        
+        const icon = this.widget.querySelector('.weather-icon');
+        const temp = this.widget.querySelector('.weather-temp');
+        const condition = this.widget.querySelector('.weather-condition');
+
+        icon.className = `weather-icon ${weather.condition}`;
+        temp.textContent = `${weather.temperature}°C`;
+        condition.textContent = this.formatCondition(weather.condition);
+    }
+
+    formatCondition(condition) {
+        const conditions = {
+            'sunny': 'Sunny',
+            'partly-cloudy': 'Partly Cloudy',
+            'cloudy': 'Cloudy',
+            'rainy': 'Rainy',
+            'snowy': 'Snowy',
+            'stormy': 'Stormy',
+            'foggy': 'Foggy',
+            'default': 'Fair'
+        };
+        return conditions[condition] || 'Unknown';
+    }
+
+    showError(message) {
+        if (!this.widget) return;
+        
+        this.widget.classList.remove('weather-loading');
+        this.widget.classList.add('weather-error');
+        
+        const condition = this.widget.querySelector('.weather-condition');
+        if (condition) {
+            condition.textContent = message;
+        }
+    }
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    const weatherUI = new WeatherUI();
+    weatherUI.init();
+});

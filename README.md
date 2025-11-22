@@ -20,7 +20,7 @@ Uses University of Islamic Sciences, Karachi method
 Jubail, Saudi Arabia (27.0040° N, 49.6460° E)
 
 ## Test check
-https://abutahathetailor-create.github.io/salatimepwalocation/
+https://abutahathetailor-create.github.io/salahtimepwalocation/
 
 
 ## Fonts Used: for Icons: 

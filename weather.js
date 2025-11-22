@@ -60,7 +60,7 @@ class WeatherService {
 
             const data = JSON.parse(cached);
             const isExpired = Date.now() - data.time > this.cacheDuration;
-            const isSameLocation = data.lat === lat && data.lon === lon;
+            const isSameLocation = Math.abs(data.lat - lat) < 0.01 && Math.abs(data.lon - lon) < 0.01;
 
             if (!isExpired && isSameLocation) {
                 return data.weather;
@@ -91,12 +91,13 @@ class WeatherUI {
     constructor() {
         this.weatherService = new WeatherService();
         this.widget = null;
+        this.maxAttempts = 20; // Increased attempts for slower location loading
+        this.attempts = 0;
     }
 
     init() {
         this.createWidget();
-        // Wait for location to be available from main app
-        setTimeout(() => this.tryGetWeather(), 1000);
+        this.waitForLocation();
     }
 
     createWidget() {
@@ -106,43 +107,102 @@ class WeatherUI {
             <div class="weather-icon default"></div>
             <div class="weather-info">
                 <div class="weather-temp">--°C</div>
-                <div class="weather-condition">Loading...</div>
+                <div class="weather-condition">Loading weather...</div>
             </div>
         `;
 
-        // Insert after location display or in header
-        const locationEl = document.querySelector('.location-display') || document.querySelector('header');
-        if (locationEl) {
-            locationEl.appendChild(this.widget);
+        // Insert after location element
+        const locationEl = document.querySelector('.location');
+        if (locationEl && locationEl.parentNode) {
+            locationEl.parentNode.insertBefore(this.widget, locationEl.nextSibling);
+        } else {
+            // Fallback: insert in header
+            const header = document.querySelector('.header');
+            if (header) {
+                header.appendChild(this.widget);
+            }
         }
     }
 
-    async tryGetWeather() {
-        // Get coordinates from existing app location
+    waitForLocation() {
+        this.attempts++;
+        
         const coords = this.getCurrentCoords();
-        if (!coords) {
-            this.showError('Location required');
-            return;
-        }
-
-        const weather = await this.weatherService.getWeather(coords.lat, coords.lon);
-        if (weather) {
-            this.updateDisplay(weather);
+        
+        if (coords && coords.lat && coords.lon) {
+            console.log('Location found:', coords);
+            this.tryGetWeather();
+        } else if (this.attempts < this.maxAttempts) {
+            console.log(`Waiting for location... attempt ${this.attempts}`);
+            setTimeout(() => this.waitForLocation(), 1000);
         } else {
+            console.warn('Location not available after max attempts');
             this.showError('Weather unavailable');
         }
     }
 
     getCurrentCoords() {
-        // This should access your existing app's location data
-        // You might need to modify this based on your current implementation
+        // Try multiple ways to get coordinates from your existing app
+        
+        // Method 1: Check if your app stores location in window object
+        if (window.currentLocation && window.currentLocation.lat) {
+            return {
+                lat: window.currentLocation.lat,
+                lon: window.currentLocation.lng || window.currentLocation.lon
+            };
+        }
+        
+        // Method 2: Check for appLocation (from your previous code)
         if (window.appLocation && window.appLocation.latitude) {
             return {
                 lat: window.appLocation.latitude,
                 lon: window.appLocation.longitude
             };
         }
+        
+        // Method 3: Check if location is stored in localStorage by your main app
+        try {
+            const storedLocation = localStorage.getItem('userLocation');
+            if (storedLocation) {
+                const location = JSON.parse(storedLocation);
+                if (location.latitude) {
+                    return {
+                        lat: location.latitude,
+                        lon: location.longitude
+                    };
+                }
+            }
+        } catch (e) {
+            console.warn('Error reading location from storage:', e);
+        }
+        
+        // Method 4: Try to get from your location.js module
+        if (window.locationModule && window.locationModule.getCurrentLocation) {
+            const location = window.locationModule.getCurrentLocation();
+            if (location) return location;
+        }
+        
         return null;
+    }
+
+    async tryGetWeather() {
+        const coords = this.getCurrentCoords();
+        if (!coords) {
+            this.showError('Location required');
+            return;
+        }
+
+        try {
+            const weather = await this.weatherService.getWeather(coords.lat, coords.lon);
+            if (weather) {
+                this.updateDisplay(weather);
+            } else {
+                this.showError('Weather unavailable');
+            }
+        } catch (error) {
+            console.error('Weather fetch error:', error);
+            this.showError('Weather service error');
+        }
     }
 
     updateDisplay(weather) {
@@ -154,9 +214,11 @@ class WeatherUI {
         const temp = this.widget.querySelector('.weather-temp');
         const condition = this.widget.querySelector('.weather-condition');
 
-        icon.className = `weather-icon ${weather.condition}`;
-        temp.textContent = `${weather.temperature}°C`;
-        condition.textContent = this.formatCondition(weather.condition);
+        if (icon) icon.className = `weather-icon ${weather.condition}`;
+        if (temp) temp.textContent = `${weather.temperature}°C`;
+        if (condition) condition.textContent = this.formatCondition(weather.condition);
+        
+        console.log('Weather updated:', weather);
     }
 
     formatCondition(condition) {
@@ -186,8 +248,24 @@ class WeatherUI {
     }
 }
 
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    const weatherUI = new WeatherUI();
-    weatherUI.init();
-});
+// Enhanced initialization with multiple fallbacks
+function initializeWeather() {
+    // Wait a bit longer to ensure other scripts are loaded
+    setTimeout(() => {
+        const weatherUI = new WeatherUI();
+        weatherUI.init();
+    }, 500);
+}
+
+// Multiple initialization methods for maximum compatibility
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeWeather);
+} else {
+    initializeWeather();
+}
+
+// Also expose to window for manual initialization if needed
+window.WeatherUI = WeatherUI;
+window.initializeWeather = initializeWeather;
+
+console.log('Weather module loaded successfully');

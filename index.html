@@ -65,24 +65,9 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
-    <script src="location.js"></script>
-    <script>
-        // Register service worker for PWA
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('service-worker.js')
-                .then(registration => console.log('SW registered'))
-                .catch(error => console.log('SW registration failed'));
-        }
-
-        // TEST: Force Fajr animation for testing
-        setTimeout(() => {
-            document.body.classList.add('fajr-time');
-            console.log('Fajr animation activated for testing');
-        }, 1000);
-    </script>
 </body>
 </html>
+
 
 
 

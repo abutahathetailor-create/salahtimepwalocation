@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prayer Gradient Test</title>
+    <title>Prayer Gradient Test with Icons</title>
     <style>
         body {
             background: #1a1a2e;
@@ -25,12 +25,10 @@
             height: 150px;
             border-radius: 15px;
             display: flex;
-            flex-direction: column;
-            justify-content: center;
             align-items: center;
+            padding: 0 20px;
             color: white;
             font-weight: bold;
-            font-size: 18px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             border: 2px solid rgba(255, 255, 255, 0.1);
             transition: all 0.3s ease;
@@ -41,17 +39,46 @@
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
         }
         
+        .weather-content {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            gap: 15px;
+        }
+        
+        .weather-icon {
+            font-size: 3rem;
+            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+        }
+        
+        .weather-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
         .prayer-name {
             font-size: 20px;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
         }
         
         .time-range {
             font-size: 14px;
             opacity: 0.9;
+            margin-bottom: 8px;
         }
         
+        .weather-temp {
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        .weather-condition {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
         /* Your gradients */
         .fajr {
             background-image: radial-gradient( circle farthest-corner at 50% 52.5%, rgba(14,53,92,1) 0%, rgba(16,14,72,1) 90% );
@@ -88,37 +115,79 @@
     </style>
 </head>
 <body>
-    <h1>🌅 Prayer Time Gradients Test</h1>
+    <h1>🌅 Prayer Time Gradients Test with Weather Icons</h1>
     
     <div class="test-container">
         <div class="gradient-box fajr">
-            <div class="prayer-name">Fajr</div>
-            <div class="time-range">Pre-dawn</div>
+            <div class="weather-content">
+                <div class="weather-icon">🌙</div>
+                <div class="weather-info">
+                    <div class="prayer-name">Fajr</div>
+                    <div class="time-range">Pre-dawn • 4:30 AM</div>
+                    <div class="weather-temp">19°C</div>
+                    <div class="weather-condition">Clear</div>
+                </div>
+            </div>
         </div>
         
         <div class="gradient-box sunrise">
-            <div class="prayer-name">Sunrise</div>
-            <div class="time-range">Morning</div>
+            <div class="weather-content">
+                <div class="weather-icon">🌅</div>
+                <div class="weather-info">
+                    <div class="prayer-name">Sunrise</div>
+                    <div class="time-range">Morning • 6:15 AM</div>
+                    <div class="weather-temp">22°C</div>
+                    <div class="weather-condition">Sunny</div>
+                </div>
+            </div>
         </div>
         
         <div class="gradient-box dhuhr">
-            <div class="prayer-name">Dhuhr</div>
-            <div class="time-range">Midday</div>
+            <div class="weather-content">
+                <div class="weather-icon">☀️</div>
+                <div class="weather-info">
+                    <div class="prayer-name">Dhuhr</div>
+                    <div class="time-range">Midday • 12:15 PM</div>
+                    <div class="weather-temp">28°C</div>
+                    <div class="weather-condition">Clear</div>
+                </div>
+            </div>
         </div>
         
         <div class="gradient-box asr">
-            <div class="prayer-name">Asr</div>
-            <div class="time-range">Afternoon</div>
+            <div class="weather-content">
+                <div class="weather-icon">⛅</div>
+                <div class="weather-info">
+                    <div class="prayer-name">Asr</div>
+                    <div class="time-range">Afternoon • 3:45 PM</div>
+                    <div class="weather-temp">26°C</div>
+                    <div class="weather-condition">Partly Cloudy</div>
+                </div>
+            </div>
         </div>
         
         <div class="gradient-box maghrib">
-            <div class="prayer-name">Maghrib</div>
-            <div class="time-range">Sunset</div>
+            <div class="weather-content">
+                <div class="weather-icon">🌇</div>
+                <div class="weather-info">
+                    <div class="prayer-name">Maghrib</div>
+                    <div class="time-range">Sunset • 6:30 PM</div>
+                    <div class="weather-temp">24°C</div>
+                    <div class="weather-condition">Clear</div>
+                </div>
+            </div>
         </div>
         
         <div class="gradient-box isha">
-            <div class="prayer-name">Isha</div>
-            <div class="time-range">Night</div>
+            <div class="weather-content">
+                <div class="weather-icon">🌙</div>
+                <div class="weather-info">
+                    <div class="prayer-name">Isha</div>
+                    <div class="time-range">Night • 8:00 PM</div>
+                    <div class="weather-temp">21°C</div>
+                    <div class="weather-condition">Clear</div>
+                </div>
+            </div>
         </div>
     </div>
 </body>

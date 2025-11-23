@@ -1,70 +1,41 @@
-/* Prayer Time Background Gradients */
-.prayer-gradient-fajr {
-    background: linear-gradient(180deg, rgba(2, 0, 36, 1) 0%, rgba(8, 8, 51, 1) 35%, rgba(5, 62, 74, 1) 100%);
+/* Prayer Time Gradients for Weather Widget Only */
+.weather-widget.prayer-gradient-fajr {
+    background: linear-gradient(135deg, rgba(2, 0, 36, 1) 0%, rgba(8, 8, 51, 1) 35%, rgba(5, 62, 74, 1) 100%);
     color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.prayer-gradient-sunrise {
-    background: linear-gradient(178deg, rgba(0, 0, 5, 1) 0%, rgba(11, 11, 66, 1) 35%, rgba(255, 128, 0, 1) 100%);
+.weather-widget.prayer-gradient-sunrise {
+    background: linear-gradient(135deg, rgba(0, 0, 5, 1) 0%, rgba(11, 11, 66, 1) 35%, rgba(255, 128, 0, 1) 100%);
     color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.prayer-gradient-dhuhr {
-    background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%);
+.weather-widget.prayer-gradient-dhuhr {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
     color: #333;
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-.prayer-gradient-asr {
-    background: linear-gradient(180deg, #ff9a9e 0%, #fecfef 100%);
+.weather-widget.prayer-gradient-asr {
+    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
     color: #333;
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-.prayer-gradient-maghrib {
-    background: linear-gradient(180deg, #fa709a 0%, #fee140 100%);
+.weather-widget.prayer-gradient-maghrib {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
     color: #333;
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-.prayer-gradient-isha {
-    background: linear-gradient(180deg, #0c0c2b 0%, #1c1c4b 50%, #2c2c6b 100%);
+.weather-widget.prayer-gradient-isha {
+    background: linear-gradient(135deg, #0c0c2b 0%, #1c1c4b 50%, #2c2c6b 100%);
     color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Smooth transitions for entire page */
-body {
-    transition: background 2s ease-in-out, color 1s ease-in-out;
-    min-height: 100vh;
-    margin: 0;
-    padding: 0;
-}
-
-/* Ensure content containers have proper contrast */
-.container {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 15px;
-    padding: 20px;
-    margin: 20px auto;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-/* Adjust text colors for better readability on light backgrounds */
-.prayer-gradient-dhuhr .container,
-.prayer-gradient-asr .container,
-.prayer-gradient-maghrib .container {
-    background: rgba(255, 255, 255, 0.15);
-}
-
-.prayer-gradient-dhuhr .header h1,
-.prayer-gradient-asr .header h1,
-.prayer-gradient-maghrib .header h1 {
-    color: #2c3e50;
-}
-
-.prayer-gradient-dhuhr .date-display,
-.prayer-gradient-asr .date-display,
-.prayer-gradient-maghrib .date-display,
-.prayer-gradient-dhuhr .hijri-date,
-.prayer-gradient-asr .hijri-date,
-.prayer-gradient-maghrib .hijri-date {
-    color: #34495e;
+/* Smooth transitions for weather widget only */
+.weather-widget {
+    transition: all 1.5s ease-in-out;
 }

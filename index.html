@@ -12,7 +12,9 @@
     <link rel="stylesheet" href="weather-icons.css">
     <!--<link rel="stylesheet" href="animations.css">-->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
+    <!--Font Style-->
+    <link rel="stylesheet" href="fontsstyles.css">
     <!-- PWA -->
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📿</text></svg>">
@@ -34,10 +36,11 @@
         
         <div class="content">
             <div id="errorMessage" style="display: none;"></div>
-            
             <div class="current-time">
                 <i class="fas fa-clock"></i>
                 <span id="currentTime">Loading...</span>
+                <!--manual addition-->
+                <i class="mi mi-fw mi-2x mi-sun"></i>
             </div>
             
             <div class="countdown">
@@ -79,6 +82,7 @@
     <script src="weather.js"></script> <!-- This should be last -->
 </body>
 </html>
+
 
 
 

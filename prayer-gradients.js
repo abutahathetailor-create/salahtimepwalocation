@@ -1,13 +1,35 @@
-// Prayer Time Gradient System
+// Prayer Time Gradient System for Weather Widget Only
 class PrayerGradientManager {
     constructor() {
         this.currentGradient = null;
         this.prayerTimes = null;
+        this.weatherWidget = null;
     }
 
     init() {
-        console.log('Initializing prayer gradients...');
-        this.waitForPrayerTimes();
+        console.log('Initializing prayer gradients for weather widget...');
+        this.waitForWeatherWidget();
+    }
+
+    waitForWeatherWidget() {
+        const maxAttempts = 20;
+        let attempts = 0;
+
+        const checkWidget = () => {
+            attempts++;
+            this.weatherWidget = document.querySelector('.weather-widget');
+            
+            if (this.weatherWidget) {
+                console.log('Weather widget found, starting gradient updates');
+                this.waitForPrayerTimes();
+            } else if (attempts < maxAttempts) {
+                setTimeout(checkWidget, 1000);
+            } else {
+                console.warn('Weather widget not found');
+            }
+        };
+
+        checkWidget();
     }
 
     waitForPrayerTimes() {
@@ -72,6 +94,8 @@ class PrayerGradientManager {
     }
 
     updateGradient() {
+        if (!this.weatherWidget) return;
+        
         const currentTime = new Date();
         const currentPrayer = this.getCurrentPrayerPeriod(currentTime);
         
@@ -131,21 +155,25 @@ class PrayerGradientManager {
     }
 
     applyGradient(prayerName) {
+        if (!this.weatherWidget) return;
+        
         const gradientClass = `prayer-gradient-${prayerName}`;
         
         // Remove existing gradient classes
-        document.body.className = document.body.className
+        this.weatherWidget.className = this.weatherWidget.className
             .split(' ')
             .filter(cls => !cls.startsWith('prayer-gradient-'))
             .join(' ');
         
-        // Add new gradient class
-        document.body.classList.add(gradientClass);
+        // Add new gradient class (keep existing classes)
+        this.weatherWidget.classList.add(gradientClass);
         
-        console.log(`Applied gradient: ${gradientClass}`);
+        console.log(`Applied gradient to weather widget: ${gradientClass}`);
     }
 
     updateGradientBasedOnTime() {
+        if (!this.weatherWidget) return;
+        
         const currentTime = new Date();
         const period = this.getTimeBasedPeriod(currentTime);
         

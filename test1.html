@@ -3,97 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Night Sky CSS</title>
+    <title>Prayer Gradient Test</title>
     <style>
-        /* Basic Reset */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        body {
+            background: #1a1a2e;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 20px;
         }
-
-        body, .night {
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden; /* Hide anything that goes beyond the edges */
+        
+        .test-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            max-width: 800px;
+            margin: 0 auto;
         }
-
-        /* Night background */
-        .night {
-            background: #000000; /* Deep black background for night */
-            position: relative;
+        
+        .gradient-box {
+            width: 100%;
+            height: 150px;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
         }
-
-        /* Stars Container and Generation */
-        .stars {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: transparent;
-            /* Increased size (e.g., 1px to 2px for some stars) and density */
-            box-shadow: 
-                /* Layer 1 (Brighter, slightly larger) */
-                10vw 10vh 0 1px #fff, 
-                20vw 30vh 0 1px #fff, 
-                40vw 15vh 0 1px #fff, 
-                60vw 25vh 0 1px #fff,
-                80vw 10vh 0 1px #fff,
-                90vw 40vh 0 1px #fff,
-                11vw 60vh 0 1px #fff,
-                13vw 5vh 0 1px #fff,
-                15vw 45vh 0 1px #fff,
-                17vw 20vh 0 1px #fff,
-                10vw 80vh 0 1px #fff,
-                30vw 90vh 0 1px #fff,
-                50vw 70vh 0 1px #fff,
-                70vw 85vh 0 1px #fff,
-                90vw 75vh 0 1px #fff,
-                11vw 95vh 0 1px #fff,
-                33vw 80vh 0 1px #fff,
-                55vw 90vh 0 1px #fff;
-            animation: twinkle 5s infinite alternate; /* Add a twinkling animation */
+        
+        .gradient-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
         }
-
-        /* Star Animation */
-        @keyframes twinkle {
-            0% { opacity: 0.7; transform: scale(1); }
-            100% { opacity: 1; transform: scale(1.1); }
+        
+        .prayer-name {
+            font-size: 20px;
+            margin-bottom: 8px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
         }
-
-        /* A second layer of stars for more depth and varying animation */
-        .stars::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            /* Layer 2 (Slightly dimmer, different positions) */
-            box-shadow: 
-                5vw 50vh 0 0px #ccc, 
-                25vw 65vh 0 0px #ccc, 
-                45vw 55vh 0 0px #ccc,
-                65vw 40vh 0 0px #ccc,
-                85vw 60vh 0 0px #ccc,
-                5vw 10vh 0 0px #ccc,
-                25vw 15vh 0 0px #ccc,
-                45vw 5vh 0 0px #ccc,
-                75vw 30vh 0 0px #ccc,
-                95vw 80vh 0 0px #ccc;
-            animation: twinkle-slow 8s infinite alternate;
+        
+        .time-range {
+            font-size: 14px;
+            opacity: 0.9;
         }
-
-        @keyframes twinkle-slow {
-            0% { opacity: 1; transform: scale(1); }
-            100% { opacity: 0.7; transform: scale(0.9); }
+        
+        /* Your gradients */
+        .fajr {
+            background-image: radial-gradient( circle farthest-corner at 50% 52.5%, rgba(14,53,92,1) 0%, rgba(16,14,72,1) 90% );
+        }
+        
+        .sunrise {
+            background-image: radial-gradient( circle farthest-corner at 10% 20%, rgba(214,40,40,1) 0%, rgba(255,195,0,1) 90% );
+        }
+        
+        .dhuhr {
+            background-image: linear-gradient( 86.9deg, rgba(253,189,38,1) 28.3%, rgba(253,109,38,1) 118.2% );
+            color: #333;
+        }
+        
+        .asr {
+            background-image: linear-gradient( 111.6deg, rgba(114,167,232,1) 9.4%, rgba(253,129,82,1) 43.9%, rgba(253,129,82,1) 54.8%, rgba(249,202,86,1) 86.3% );
+            color: #333;
+        }
+        
+        .maghrib {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: #333;
+        }
+        
+        .isha {
+            background-image: radial-gradient( circle farthest-corner at 50.3% 47.3%, rgba(113,42,92,1) 0.1%, rgba(40,25,46,1) 90% );
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
         }
     </style>
 </head>
 <body>
-    <div class="night">
-        <div class="stars"></div>
+    <h1>🌅 Prayer Time Gradients Test</h1>
+    
+    <div class="test-container">
+        <div class="gradient-box fajr">
+            <div class="prayer-name">Fajr</div>
+            <div class="time-range">Pre-dawn</div>
+        </div>
+        
+        <div class="gradient-box sunrise">
+            <div class="prayer-name">Sunrise</div>
+            <div class="time-range">Morning</div>
+        </div>
+        
+        <div class="gradient-box dhuhr">
+            <div class="prayer-name">Dhuhr</div>
+            <div class="time-range">Midday</div>
+        </div>
+        
+        <div class="gradient-box asr">
+            <div class="prayer-name">Asr</div>
+            <div class="time-range">Afternoon</div>
+        </div>
+        
+        <div class="gradient-box maghrib">
+            <div class="prayer-name">Maghrib</div>
+            <div class="time-range">Sunset</div>
+        </div>
+        
+        <div class="gradient-box isha">
+            <div class="prayer-name">Isha</div>
+            <div class="time-range">Night</div>
+        </div>
     </div>
 </body>
 </html>

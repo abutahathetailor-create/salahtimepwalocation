@@ -1,24 +1,24 @@
 /* Prayer Time Gradients for Weather Widget Only */
 .weather-widget.prayer-gradient-fajr {
-    background: linear-gradient(135deg, rgba(2, 0, 36, 1) 0%, rgba(8, 8, 51, 1) 35%, rgba(5, 62, 74, 1) 100%);
+    background-image: radial-gradient( circle farthest-corner at 50% 52.5%, rgba(14,53,92,1) 0%, rgba(16,14,72,1) 90% );
     color: white;
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .weather-widget.prayer-gradient-sunrise {
-    background: linear-gradient(135deg, rgba(0, 0, 5, 1) 0%, rgba(11, 11, 66, 1) 35%, rgba(255, 128, 0, 1) 100%);
+    background-image: radial-gradient( circle farthest-corner at 10% 20%, rgba(214,40,40,1) 0%, rgba(255,195,0,1) 90% );
     color: white;
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .weather-widget.prayer-gradient-dhuhr {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    background-image: linear-gradient( 86.9deg, rgba(253,189,38,1) 28.3%, rgba(253,109,38,1) 118.2% );
     color: #333;
     border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .weather-widget.prayer-gradient-asr {
-    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+    background-image: linear-gradient( 111.6deg, rgba(114,167,232,1) 9.4%, rgba(253,129,82,1) 43.9%, rgba(253,129,82,1) 54.8%, rgba(249,202,86,1) 86.3% );
     color: #333;
     border: 1px solid rgba(255, 255, 255, 0.3);
 }
@@ -30,7 +30,7 @@
 }
 
 .weather-widget.prayer-gradient-isha {
-    background: linear-gradient(135deg, #0c0c2b 0%, #1c1c4b 50%, #2c2c6b 100%);
+    background-image: radial-gradient( circle farthest-corner at 50.3% 47.3%, rgba(113,42,92,1) 0.1%, rgba(40,25,46,1) 90% );
     color: white;
     border: 1px solid rgba(255, 255, 255, 0.2);
 }

@@ -8,122 +8,29 @@ class PrayerGradientManager {
 
     init() {
         console.log('Initializing prayer gradients for weather widget...');
-        this.waitForWeatherWidget();
+        this.startImmediately();
     }
 
-    waitForWeatherWidget() {
-        const maxAttempts = 20;
-        let attempts = 0;
-
-        const checkWidget = () => {
-            attempts++;
-            this.weatherWidget = document.querySelector('.weather-widget');
-            
-            if (this.weatherWidget) {
-                console.log('Weather widget found, starting gradient updates');
-                this.waitForPrayerTimes();
-            } else if (attempts < maxAttempts) {
-                setTimeout(checkWidget, 1000);
-            } else {
-                console.warn('Weather widget not found');
-            }
-        };
-
-        checkWidget();
-    }
-
-    waitForPrayerTimes() {
-        const maxAttempts = 20;
-        let attempts = 0;
-
-        const checkPrayerTimes = () => {
-            attempts++;
-            this.prayerTimes = this.getPrayerTimes();
-            
-            if (this.prayerTimes && Object.keys(this.prayerTimes).length > 0) {
-                console.log('Prayer times found:', this.prayerTimes);
-                this.startGradientUpdates();
-            } else if (attempts < maxAttempts) {
-                setTimeout(checkPrayerTimes, 1000);
-            } else {
-                console.warn('Prayer times not found, using time-based gradients');
-                this.startTimeBasedGradients();
-            }
-        };
-
-        checkPrayerTimes();
-    }
-
-    getPrayerTimes() {
-        if (window.prayerTimes && typeof window.prayerTimes === 'object') {
-            return window.prayerTimes;
-        }
+    startImmediately() {
+        // Try to find weather widget immediately
+        this.weatherWidget = document.querySelector('.weather-widget');
         
-        if (window.currentPrayerTimes) {
-            return window.currentPrayerTimes;
-        }
-
-        try {
-            const storedTimes = localStorage.getItem('prayerTimes');
-            if (storedTimes) {
-                return JSON.parse(storedTimes);
-            }
-        } catch (e) {
-            console.warn('Error reading prayer times from storage:', e);
-        }
-
-        return null;
-    }
-
-    startGradientUpdates() {
-        this.updateGradient();
-        setInterval(() => this.updateGradient(), 60000);
-    }
-
-    startTimeBasedGradients() {
-        this.updateGradientBasedOnTime();
-        setInterval(() => this.updateGradientBasedOnTime(), 60000);
-    }
-
-    updateGradient() {
-        if (!this.weatherWidget) return;
-        
-        const currentTime = new Date();
-        const currentPrayer = this.getCurrentPrayerPeriod(currentTime);
-        
-        if (currentPrayer && currentPrayer !== this.currentGradient) {
-            this.applyGradient(currentPrayer);
-            this.currentGradient = currentPrayer;
-        }
-    }
-
-    getCurrentPrayerPeriod(currentTime) {
-        if (!this.prayerTimes) return this.getTimeBasedPeriod(currentTime);
-
-        const timeString = currentTime.toTimeString().split(' ')[0];
-        const currentTimestamp = this.timeToMinutes(timeString);
-
-        const prayers = {
-            fajr: this.timeToMinutes(this.prayerTimes.Fajr),
-            sunrise: this.timeToMinutes(this.prayerTimes.Sunrise),
-            dhuhr: this.timeToMinutes(this.prayerTimes.Dhuhr),
-            asr: this.timeToMinutes(this.prayerTimes.Asr),
-            maghrib: this.timeToMinutes(this.prayerTimes.Maghrib),
-            isha: this.timeToMinutes(this.prayerTimes.Isha)
-        };
-
-        if (currentTimestamp < prayers.fajr || currentTimestamp >= prayers.isha) {
-            return 'isha';
-        } else if (currentTimestamp < prayers.sunrise) {
-            return 'fajr';
-        } else if (currentTimestamp < prayers.dhuhr) {
-            return 'sunrise';
-        } else if (currentTimestamp < prayers.asr) {
-            return 'dhuhr';
-        } else if (currentTimestamp < prayers.maghrib) {
-            return 'asr';
+        if (this.weatherWidget) {
+            console.log('Weather widget found, starting gradients immediately');
+            // Apply gradient right away based on current time
+            this.updateGradientBasedOnTime();
+            // Update every minute
+            setInterval(() => this.updateGradientBasedOnTime(), 60000);
         } else {
-            return 'maghrib';
+            // If not found, wait just 3 seconds max
+            console.log('Weather widget not found, waiting 3 seconds...');
+            setTimeout(() => {
+                this.weatherWidget = document.querySelector('.weather-widget');
+                if (this.weatherWidget) {
+                    this.updateGradientBasedOnTime();
+                    setInterval(() => this.updateGradientBasedOnTime(), 60000);
+                }
+            }, 3000);
         }
     }
 
@@ -138,12 +45,6 @@ class PrayerGradientManager {
         else if (hour < 16) return 'dhuhr';             // 8 AM - 4 PM (Day)
         else if (hour < 18) return 'asr';               // 4 PM - 6 PM (Afternoon)
         else return 'maghrib';                          // 6 PM - 6 PM (Sunset)
-    }
-
-    timeToMinutes(timeStr) {
-        if (!timeStr) return 0;
-        const [hours, minutes] = timeStr.split(':').map(Number);
-        return hours * 60 + minutes;
     }
 
     applyGradient(prayerName) {
@@ -176,11 +77,6 @@ class PrayerGradientManager {
     }
 }
 
-// Initialize when ready
+// Initialize immediately - no waiting for DOM ready
 const gradientManager = new PrayerGradientManager();
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => gradientManager.init());
-} else {
-    gradientManager.init();
-}
+gradientManager.init();

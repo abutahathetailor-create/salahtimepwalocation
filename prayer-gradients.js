@@ -33,7 +33,6 @@ class PrayerGradientManager {
     }
 
     waitForPrayerTimes() {
-        // Wait for prayer times to be available from main app
         const maxAttempts = 20;
         let attempts = 0;
 
@@ -56,17 +55,14 @@ class PrayerGradientManager {
     }
 
     getPrayerTimes() {
-        // Try to get prayer times from your main app
         if (window.prayerTimes && typeof window.prayerTimes === 'object') {
             return window.prayerTimes;
         }
         
-        // Check if prayer times are in global scope
         if (window.currentPrayerTimes) {
             return window.currentPrayerTimes;
         }
 
-        // Check localStorage
         try {
             const storedTimes = localStorage.getItem('prayerTimes');
             if (storedTimes) {
@@ -80,15 +76,11 @@ class PrayerGradientManager {
     }
 
     startGradientUpdates() {
-        // Update gradient immediately
         this.updateGradient();
-        
-        // Update every minute to catch prayer time changes
         setInterval(() => this.updateGradient(), 60000);
     }
 
     startTimeBasedGradients() {
-        // Fallback: use time of day if prayer times not available
         this.updateGradientBasedOnTime();
         setInterval(() => this.updateGradientBasedOnTime(), 60000);
     }
@@ -108,10 +100,9 @@ class PrayerGradientManager {
     getCurrentPrayerPeriod(currentTime) {
         if (!this.prayerTimes) return this.getTimeBasedPeriod(currentTime);
 
-        const timeString = currentTime.toTimeString().split(' ')[0]; // HH:MM:SS
+        const timeString = currentTime.toTimeString().split(' ')[0];
         const currentTimestamp = this.timeToMinutes(timeString);
 
-        // Convert prayer times to minutes for comparison
         const prayers = {
             fajr: this.timeToMinutes(this.prayerTimes.Fajr),
             sunrise: this.timeToMinutes(this.prayerTimes.Sunrise),
@@ -121,7 +112,6 @@ class PrayerGradientManager {
             isha: this.timeToMinutes(this.prayerTimes.Isha)
         };
 
-        // Determine current prayer period
         if (currentTimestamp < prayers.fajr || currentTimestamp >= prayers.isha) {
             return 'isha';
         } else if (currentTimestamp < prayers.sunrise) {
@@ -139,13 +129,15 @@ class PrayerGradientManager {
 
     getTimeBasedPeriod(currentTime) {
         const hour = currentTime.getHours();
+        console.log('Current hour:', hour);
         
-        if (hour >= 21 || hour < 4) return 'isha';      // 9 PM - 4 AM
-        else if (hour < 6) return 'fajr';               // 4 AM - 6 AM
-        else if (hour < 12) return 'sunrise';           // 6 AM - 12 PM
-        else if (hour < 15) return 'dhuhr';             // 12 PM - 3 PM
-        else if (hour < 18) return 'asr';               // 3 PM - 6 PM
-        else return 'maghrib';                          // 6 PM - 9 PM
+        // Fixed for Saudi Arabia time
+        if (hour >= 18 || hour < 4) return 'isha';      // 6 PM - 4 AM (Night)
+        else if (hour < 6) return 'fajr';               // 4 AM - 6 AM (Pre-dawn)
+        else if (hour < 8) return 'sunrise';            // 6 AM - 8 AM (Sunrise)
+        else if (hour < 16) return 'dhuhr';             // 8 AM - 4 PM (Day)
+        else if (hour < 18) return 'asr';               // 4 PM - 6 PM (Afternoon)
+        else return 'maghrib';                          // 6 PM - 6 PM (Sunset)
     }
 
     timeToMinutes(timeStr) {
@@ -159,16 +151,14 @@ class PrayerGradientManager {
         
         const gradientClass = `prayer-gradient-${prayerName}`;
         
-        // Remove existing gradient classes
         this.weatherWidget.className = this.weatherWidget.className
             .split(' ')
             .filter(cls => !cls.startsWith('prayer-gradient-'))
             .join(' ');
         
-        // Add new gradient class (keep existing classes)
         this.weatherWidget.classList.add(gradientClass);
         
-        console.log(`Applied gradient to weather widget: ${gradientClass}`);
+        console.log('Applied gradient to weather widget:', gradientClass);
     }
 
     updateGradientBasedOnTime() {
@@ -176,6 +166,8 @@ class PrayerGradientManager {
         
         const currentTime = new Date();
         const period = this.getTimeBasedPeriod(currentTime);
+        
+        console.log('Current time:', currentTime.toLocaleTimeString(), 'Detected period:', period);
         
         if (period !== this.currentGradient) {
             this.applyGradient(period);

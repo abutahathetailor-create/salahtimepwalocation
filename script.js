@@ -31,12 +31,12 @@ const prayerIcons = {
     //Maghrib: "fas fa-sun",
     //Isha: "fas fa-moon"
 //new one
-    Fajr: "mi mi-fog-moon",
-    Sunrise: "mi mi-fog-sun",
-    Dhuhr: "mi mi-sun",
-    Asr: "mi mi-cloud-sun", 
-    Maghrib: "mi mi-mist",
-    Isha: "mi mi-moon"
+    Fajr: "mi mi-2x mi-fog-moon",
+    Sunrise: "mi mi-2x  mi-fog-sun",
+    Dhuhr: "mi mi-2x  mi-sun",
+    Asr: "mi mi-2x mi-cloud-sun", 
+    Maghrib: "mi mi-2x  mi-mist",
+    Isha: "mi mi-2x mi-moon"
 
     
 };

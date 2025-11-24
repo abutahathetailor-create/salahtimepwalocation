@@ -431,8 +431,9 @@ function displayPrayerTimes() {
                 <div class="prayer-name">
                     <i class="${prayerIcons[prayerName]}"></i>
                     <span>${prayerName}</span>
+                    <span class="prayer-time">${formatTime(time)}</span>
                 </div>
-                <div class="prayer-time">${formatTime(time)}</div>
+                
             `;
         }
         

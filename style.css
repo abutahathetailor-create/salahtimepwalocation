@@ -189,8 +189,9 @@ body {
     font-weight: 700;
     color: #b0e6ff;
     flex-shrink: 0;
-    text-align: left;
+    text-align: right;
 }
+ 
 
 .prayer-card.active .prayer-time {
     color: #4CAF50;

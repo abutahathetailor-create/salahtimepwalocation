@@ -421,8 +421,10 @@ function displayPrayerTimes() {
                 <div class="prayer-name"> 
                     <i class="${prayerIcons[prayerName]}"></i>
                     <span>${prayerArabicNames[prayerName]} (${prayerName})</span>
+                    <span class="prayer-time">${formatTime(time)}</span>
                 </div>
-                <div class="prayer-time">${formatTime(time)}</div>
+                
+                
             `;
         } else {
             prayerCard.innerHTML = `

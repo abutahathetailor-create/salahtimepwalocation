@@ -24,12 +24,21 @@ const prayerArabicNames = {
 
 // Prayer icons
 const prayerIcons = {
-    Fajr: "fas fa-star-and-crescent",
-    Sunrise: "fas fa-sun",
-    Dhuhr: "fas fa-sun",
-    Asr: "fas fa-cloud-sun", 
-    Maghrib: "fas fa-sun",
-    Isha: "fas fa-moon"
+    //Fajr: "fas fa-star-and-crescent",
+    //Sunrise: "fas fa-sun",
+    //Dhuhr: "fas fa-sun",
+    //Asr: "fas fa-cloud-sun", 
+    //Maghrib: "fas fa-sun",
+    //Isha: "fas fa-moon"
+//new one
+    Fajr: "mi mi-fog-moon",
+    Sunrise: "mi mi-fog-sun",
+    Dhuhr: "mi mi-sun",
+    Asr: "mi mi-cloud-sun", 
+    Maghrib: "mi mi-mist",
+    Isha: "mi mi-moon"
+
+    
 };
 
 // DOM Elements
@@ -388,7 +397,8 @@ async function initPrayerTimes() {
     }
 }
 
-// Format time to 12-hour format
+// Format time to 12-hour formata
+
 function formatTime(timeString) {
     const [hours, minutes] = timeString.split(':');
     const hour = parseInt(hours);
@@ -408,7 +418,7 @@ function displayPrayerTimes() {
         
         if (prayerArabicNames[prayerName]) {
             prayerCard.innerHTML = `
-                <div class="prayer-name">
+                <div class="prayer-name"> 
                     <i class="${prayerIcons[prayerName]}"></i>
                     <span>${prayerArabicNames[prayerName]} (${prayerName})</span>
                 </div>
